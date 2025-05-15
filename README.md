@@ -28,7 +28,7 @@
 ### 3. ☁️ Google Drive Integration
 - Store processed songs directly to **Google Drive**
 - Prevents redundant separations
-- Uses **OAuth2** for secure access
+- Uses **Firebase** for secure access
 - Supports models like **UVR5** or **HTDemucs** for separation
 
 ### 4. 🎛️ Playback Controls
@@ -51,7 +51,7 @@
 
 ### Frontend
 - **React.js** (Web-only)
-- **Tailwind CSS** (via CDN)
+- **Tailwind CSS** 
 
 ### Backend
 
@@ -60,7 +60,7 @@
 - **Google Drive API** (OAuth2)
 - **JWT Authentication**
   - Username/Password login
-  - Google OAuth login
+  - Firebase login
 
 ---
 
