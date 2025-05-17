@@ -8,13 +8,8 @@ router.get('/:videoId', async (req, res) => {
 
   try {
     exec(`yt-dlp -f bestaudio --get-url ${videoUrl}`, (error, stdout, stderr) => {
-      if (error) {
-        return res.status(500).json({ error: `Failed to extract audio URL: ${stderr || error.message}` });
-      }
-      if (stderr) {
-        return res.status(500).json({ error: `stderr: ${stderr}` });
-      }
-
+      if (error) return res.status(500).json({ error: `Failed to extract audio URL: ${stderr || error.message}` });
+      if (stderr) return res.status(500).json({ error: `stderr: ${stderr}` });
       const audioUrl = stdout.trim(); 
       if (audioUrl) {
         res.json({ audioUrl });
