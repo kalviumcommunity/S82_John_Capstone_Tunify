@@ -27,11 +27,6 @@ function PlayerContainer() {
   return (
     <>
       <Home onSongClick={handleSongClick} />
-      {loadingAudio && (
-        <p className="fixed bottom-28 left-0 right-0 text-center text-[#504B38] dark:text-[#F8F3D9]">
-          Loading audio...
-        </p>
-      )}
       {errorAudio && (
         <p className="fixed bottom-28 left-0 right-0 text-center text-red-500">
           {errorAudio}
