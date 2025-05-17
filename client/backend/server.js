@@ -1,5 +1,3 @@
-
-
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
@@ -10,6 +8,7 @@ dotenv.config();
 const authRoutes = require('./routes/authRoutes');  
 const musicRoutes = require('./routes/musicRoutes');
 const searchRoutes = require('./routes/searchRoutes');
+const playRoutes = require('./routes/playRoutes');
 
 const app = express();
 
@@ -24,6 +23,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/api/auth', authRoutes);
 app.use('/api/search', searchRoutes);
 app.use('/api/audio', musicRoutes);
+app.use('/api/playlists', playRoutes);
 
 
 mongoose.connect(process.env.MONGO_URI)

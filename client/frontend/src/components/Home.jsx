@@ -1,54 +1,85 @@
-import React from 'react';
-import { Search, TrendingUp as Trending, Library } from 'lucide-react';
+import React, { useState } from 'react';
+import axios from 'axios';
+import { Search, TrendingUp as Trending } from 'lucide-react';
 
-const trendingSongs = [
-  { id: 1, title: "Summer Vibes", artist: "Chill Wave", cover: "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=300" },
-  { id: 2, title: "Midnight Dreams", artist: "Luna", cover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=300" },
-  { id: 3, title: "Urban Flow", artist: "City Beats", cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=300" },
-];
+function Home({ onSongClick }) {
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-function Home() {
+  const getHighResThumbnail = (url) => {
+    return url?.replace(/(default|hqdefault|mqdefault|sddefault)\.jpg/, 'maxresdefault.jpg');
+  };
+
+  const handleSearch = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await axios.get(`http://localhost:5001/api/music/search?q=${query}`);
+      setResults(res.data.items || []);
+    } catch {
+      setError('Failed to fetch search results');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="p-6 space-y-8 bg-[#F8F3D9] dark:bg-[#3B362C] min-h-screen">
       <div className="relative">
         <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[#504B38] dark:text-[#EBE5C2]" />
         <input
-          type="text"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
           placeholder="Search for songs, artists, or albums..."
           className="w-full pl-12 pr-4 py-3 rounded-full bg-[#EBE5C2] dark:bg-[#504B38] text-[#504B38] dark:text-[#F8F3D9] focus:ring-2 focus:ring-[#B9B28A] dark:focus:ring-[#9B9477] focus:outline-none"
         />
       </div>
 
-      <section>
-        <div className="flex items-center gap-2 mb-4">
-          <Trending className="text-[#504B38] dark:text-[#F8F3D9]" />
-          <h2 className="text-2xl font-bold text-[#504B38] dark:text-[#F8F3D9]">Trending Now</h2>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {trendingSongs.map(song => (
-            <div key={song.id} className="bg-[#EBE5C2] dark:bg-[#504B38] rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow">
-              <img src={song.cover} alt={song.title} className="w-full h-48 object-cover" />
-              <div className="p-4">
-                <h3 className="font-semibold text-[#504B38] dark:text-[#F8F3D9]">{song.title}</h3>
-                <p className="text-[#7A745D] dark:text-[#B9B28A]">{song.artist}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
+      {loading && <p>Loading...</p>}
+      {error && <p className="text-red-500">{error}</p>}
 
       <section>
         <div className="flex items-center gap-2 mb-4">
-          <Library className="text-[#504B38] dark:text-[#F8F3D9]" />
-          <h2 className="text-2xl font-bold text-[#504B38] dark:text-[#F8F3D9]">Your Library</h2>
+          <Trending className="text-[#504B38] dark:text-[#F8F3D9]" />
+          <h2 className="text-2xl font-bold text-[#504B38] dark:text-[#F8F3D9]">Search Results</h2>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="bg-[#EBE5C2] dark:bg-[#504B38] rounded-lg p-4 text-center">
-              <div className="w-full aspect-square bg-[#B9B28A] dark:bg-[#7A745D] rounded-lg mb-2"></div>
-              <p className="font-medium text-[#504B38] dark:text-[#F8F3D9]">Playlist {i + 1}</p>
-            </div>
-          ))}
+
+        {/* Responsive table for Spotify-like playlist */}
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm text-left text-gray-800 dark:text-gray-300">
+            <tbody>
+              {results.map((song, idx) => (
+                <tr
+                  key={song.id}
+                  onClick={() => onSongClick(song)}
+                  className="border-b border-gray-300 dark:border-gray-700 hover:bg-[#EBE5C2] dark:hover:bg-[#6B644F] cursor-pointer transition-colors"
+                >
+                  <td className="px-4 py-3 text-center">{idx + 1}</td>
+                  <td className="px-4 py-3 flex items-center space-x-3 max-w-xs">
+                    <img
+                      src={getHighResThumbnail(song.thumbnail) || 'https://placehold.co/56x56?text=No+Image'}
+                      alt={song.title}
+                      className="w-20 h-20 rounded-md object-cover"
+                    />
+                    <div className="flex flex-col overflow-hidden">
+                      <span className="font-semibold truncate text-[#504B38] dark:text-[#F8F3D9]">
+                        {song.title}
+                      </span>
+                      <span className="text-xs text-[#7A745D] dark:text-[#B9B28A] truncate">
+                        {song.artists?.join(', ') || 'Unknown Artist'}
+                      </span>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 truncate max-w-xs hidden md:table-cell">{song.album}</td>
+                  <td className="px-4 py-3 hidden md:table-cell">{song.dateAdded || '—'}</td>
+                  <td className="px-4 py-3 text-center">{song.duration || '—'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </section>
     </div>

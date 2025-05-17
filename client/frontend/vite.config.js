@@ -10,14 +10,23 @@ export default defineConfig({
     exclude: ['lucide-react'],
   },
   server: {
-    proxy: {
-      '/auth': 'http://localhost:5000',
-      '/api': 'http://localhost:5173',
-      '/audio': {
-        target: 'http://localhost:5000',
-        changeOrigin: true,
-        secure: false,
-      },
+  proxy: {
+    '/auth': {
+      target: 'http://localhost:5000',
+      changeOrigin: true,
+      secure: false,
+    },
+    '/api': {
+      target: 'http://localhost:5000', 
+      changeOrigin: true,
+      secure: false,
+    },
+    '/audio': {
+      target: 'http://localhost:5000',
+      changeOrigin: true,
+      secure: false,
     },
   },
+},
+
 });

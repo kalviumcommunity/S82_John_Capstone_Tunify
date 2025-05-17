@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
-import { TopBar } from './components/TopBar';
+import { Routes, Route } from 'react-router-dom';
+import TopBar from './components/TopBar';
 import { AuthModal } from './components/AuthModal';
 import Sidebar from './components/Sidebar';
-import { Home } from './components/Home';
-import { Player } from './components/Player';
+import { PlayerContainer } from './components/PlayerContainer';
+import LikedSongsPage from './components/LikedSongsPage';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function App() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
@@ -19,15 +22,19 @@ function App() {
             onThemeToggle={() => setIsDarkMode(!isDarkMode)}
           />
           <div className="flex-1 overflow-y-auto">
-            <Home />
+            <Routes>
+              <Route path="/" element={<PlayerContainer />} />
+              <Route path="/likedsongs" element={<LikedSongsPage />} />
+            </Routes>
           </div>
         </main>
       </div>
-      <Player />
+
       <AuthModal
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}
       />
+      <ToastContainer position="top-right" autoClose={500} />
     </div>
   );
 }
