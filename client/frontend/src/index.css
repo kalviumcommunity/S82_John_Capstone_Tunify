@@ -24,8 +24,10 @@
   input[type="range"]::-moz-range-thumb {
     @apply w-3 h-3 bg-[#B9B28A] dark:bg-[#9B9477] rounded-full appearance-none cursor-pointer;
   }
+  
 }
 
 .dark {
   color-scheme: dark;
 }
+
