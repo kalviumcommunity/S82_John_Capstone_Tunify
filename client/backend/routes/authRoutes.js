@@ -101,7 +101,7 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// Example protected route using the JWT middleware
+
 router.get('/protected', authenticateToken, async (req, res) => {
   console.log('Accessing protected route. User ID from token:', req.user.id);
   

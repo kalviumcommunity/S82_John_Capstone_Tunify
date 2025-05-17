@@ -17,7 +17,7 @@ export default function TopBar({ onAuthClick, onThemeToggle }) {
   const handleLogout = async () => {
     try {
       await signOut(auth);
-      localStorage.removeItem('token'); // optional: remove any backend token
+      localStorage.removeItem('token'); 
       toast.success('Logged out successfully');
     } catch (error) {
       console.error('Logout Error:', error);
