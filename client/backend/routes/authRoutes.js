@@ -20,9 +20,6 @@ router.post('/register', async (req, res) => {
     const user = new User({ name, username, email, password: hashedPassword });
 
     await user.save();
-
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '30m' });
-    res.json({ token, user: { name: user.name, email: user.email } });
   } catch (err) {
     console.error('Register Error:', err);
     res.status(500).json({ message: 'Registration failed' });
@@ -42,9 +39,6 @@ router.post('/login', async (req, res) => {
 
     const match = await bcrypt.compare(password, user.password);
     if (!match) return res.status(401).json({ message: 'Invalid credentials' });
-
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '30m' });
-    res.json({ token, user: { name: user.name, email: user.email } });
   } catch (err) {
     console.error('Login Error:', err);
     res.status(500).json({ message: 'Login failed' });
@@ -75,17 +69,6 @@ router.post('/auth', async (req, res) => {
         return res.status(404).json({ error: 'No user found. Please sign up first.' });
       }
     }
-
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '30m' });
-    res.json({
-      success: true,
-      token,
-      user: {
-        email: user.email,
-        name: user.name,
-        firebaseUID: user.firebaseUID,
-      },
-    });
   } catch (error) {
     console.error('Error verifying Firebase token or processing auth:', error);
     res.status(500).json({ error: 'Internal server error during auth process' });
