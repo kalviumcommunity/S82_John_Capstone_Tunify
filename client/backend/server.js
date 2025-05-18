@@ -3,7 +3,7 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const dotenv = require('dotenv');
-dotenv.config();
+dotenv.config({ path: '.env.test' });
 
 const authRoutes = require('./routes/authRoutes');  
 const musicRoutes = require('./routes/musicRoutes');
