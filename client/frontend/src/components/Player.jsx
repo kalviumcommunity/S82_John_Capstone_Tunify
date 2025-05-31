@@ -20,12 +20,21 @@ function Player({ currentSong, currentAudioUrl }) {
   useEffect(() => {
     const playAudio = async () => {
       if (audioRef.current && currentAudioUrl) {
+        console.log('Attempting to play:', currentAudioUrl);
         try {
+          audioRef.current.src = currentAudioUrl;
           audioRef.current.load();
-          await audioRef.current.play();
-          setIsPlaying(true);
+
+          audioRef.current.onloadedmetadata = async () => {
+            try {
+              await audioRef.current.play();
+              setIsPlaying(true);
+            } catch (err) {
+              console.error('Audio play error:', err);
+            }
+          };
         } catch (err) {
-          console.error('Audio play error:', err);
+          console.error('Audio setup error:', err);
         }
       }
     };
@@ -34,84 +43,68 @@ function Player({ currentSong, currentAudioUrl }) {
 
   useEffect(() => {
     if (audioRef.current) {
-      isPlaying ? audioRef.current.play().catch(console.error) : audioRef.current.pause();
+      isPlaying
+        ? audioRef.current.play().catch(err => console.error('Resume play error:', err))
+        : audioRef.current.pause();
     }
   }, [isPlaying]);
 
   useEffect(() => {
-   const checkIfLiked = async () => {
-  if (!currentSong || !currentSong.id) return;
+    const checkIfLiked = async () => {
+      if (!currentSong || !currentSong.id) return;
 
-  try {
-    const response = await axios.get(`http://localhost:5000/api/playlists/liked/${userId}`);
-    if (response.status === 200 && response.data?.songs) {
-      const liked = response.data.songs.some(song => song.videoId === currentSong.id); // match with backend's videoId
-      setIsLiked(liked);
-    }
-  } catch (err) {
-    console.error("Error fetching liked songs:", err);
-  }
-};                  
-
+      try {
+        const response = await axios.get(`http://localhost:5000/api/playlists/liked/${userId}`);
+        if (response.status === 200 && response.data?.songs) {
+          const liked = response.data.songs.some(song => song.videoId === currentSong.id);
+          setIsLiked(liked);
+        }
+      } catch (err) {
+        console.error("Error fetching liked songs:", err);
+      }
+    };
 
     checkIfLiked();
   }, [currentSong]);
 
   const handleTimeUpdate = () => {
     const audio = audioRef.current;
-    if (audio) {
+    if (audio && audio.duration) {
       setProgress((audio.currentTime / audio.duration) * 100 || 0);
     }
   };
 
   const handleSeek = (e) => {
     const audio = audioRef.current;
-    if (audio) {
+    if (audio && audio.duration) {
       audio.currentTime = (parseInt(e.target.value) / 100) * audio.duration;
     }
   };
 
-const handleLikeToggle = async () => {
-  if (!currentSong || !currentSong.id) {
-    console.log("No current song:", currentSong);
-    return;
-  }
+  const handleLikeToggle = async () => {
+    if (!currentSong || !currentSong.id) return;
 
-  console.log("Sending song to backend:", {
-    song: {
-      videoId: currentSong.id, // 🔁 map `id` to `videoId` expected by backend
-      title: currentSong.title,
-      artist: currentSong.artists?.join(', '),
-      cover: currentSong.thumbnail
-    },
-    action: isLiked ? 'remove' : 'add'
-  });
+    try {
+      const response = await axios.put(
+        `http://localhost:5000/api/playlists/liked/${userId}`,
+        {
+          song: {
+            videoId: currentSong.id,
+            title: currentSong.title,
+            artist: currentSong.artists?.join(', '),
+            cover: currentSong.thumbnail,
+          },
+          action: isLiked ? 'remove' : 'add',
+        }
+      );
 
-  try {
-    const response = await axios.put(
-      `http://localhost:5000/api/playlists/liked/${userId}`,
-      {
-        song: {
-          videoId: currentSong.id,
-          title: currentSong.title,
-          artist: currentSong.artists?.join(', '),
-          cover: currentSong.thumbnail,
-        },
-        action: isLiked ? 'remove' : 'add',
+      if (response.status === 200) {
+        setIsLiked(!isLiked);
       }
-    );
-
-    if (response.status === 200) {
-      setIsLiked(!isLiked);
+    } catch (error) {
+      console.error('Error toggling like:', error);
     }
-  } catch (error) {
-    console.error('Error toggling like:', error);
-  }
-};
-
-
-
-
+  };
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 bg-[#F8F3D9] dark:bg-[#3B362C] border-t border-[#B9B28A] dark:border-[#7A745D] p-4 h-24">
@@ -185,9 +178,10 @@ const handleLikeToggle = async () => {
 
         <audio
           ref={audioRef}
-          src={currentAudioUrl}
           onTimeUpdate={handleTimeUpdate}
           onEnded={() => setIsPlaying(false)}
+          preload="auto"
+          controls={false}
         />
       </div>
     </div>
