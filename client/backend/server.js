@@ -1,14 +1,17 @@
+
+
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const dotenv = require('dotenv');
-dotenv.config({ path: '.env.test' });
+dotenv.config();
 
 const authRoutes = require('./routes/authRoutes');  
 const musicRoutes = require('./routes/musicRoutes');
 const searchRoutes = require('./routes/searchRoutes');
 const playRoutes = require('./routes/playRoutes');
+
 
 const app = express();
 

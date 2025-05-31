@@ -5,6 +5,7 @@ import {
   Library,
   Download,
   Settings,
+  UploadIcon,
   Heart,
   Music2,
   Menu,
@@ -16,7 +17,9 @@ const menuItems = [
   { icon: Library, label: 'Library', path: '/library' },
   { icon: Heart, label: 'Liked Songs', path: '/likedsongs' },
   { icon: Download, label: 'Downloads', path: '/downloads' },
-  { icon: Settings, label: 'Settings', path: '/settings' }
+  { icon: Settings, label: 'Settings', path: '/settings' },
+  { icon: UploadIcon, label: 'Upload', path: '/upload' }
+
 ];
 
 function Sidebar() {
