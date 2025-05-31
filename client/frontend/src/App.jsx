@@ -25,6 +25,8 @@ function App() {
             <Routes>
               <Route path="/" element={<PlayerContainer />} />
               <Route path="/likedsongs" element={<LikedSongsPage />} />
+              {/* <Route path="/upload" element={<UploadPage />} /> */}
+
             </Routes>
           </div>
         </main>
