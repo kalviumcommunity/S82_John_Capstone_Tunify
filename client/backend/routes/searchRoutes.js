@@ -94,7 +94,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-// 🔥 Suggest endpoint
+//Suggest endpoint
 router.get('/suggest', async (req, res) => {
   const query = req.query.q;
   if (!query) return res.json({ suggestions: [] });

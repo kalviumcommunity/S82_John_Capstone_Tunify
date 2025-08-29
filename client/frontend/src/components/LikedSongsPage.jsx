@@ -1,24 +1,34 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Heart } from 'lucide-react';
+import { Heart, Play } from 'lucide-react';
 
-function LikedSongsPage() {
+function LikedSongsPage({ onSongClick }) {
   const [likedSongs, setLikedSongs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const userId = 'demo_user'; // Replace with actual logged-in user ID
+  const userId = 'demo_user';
+
+  // Normalize function to unify song object structure
+  const normalizeSong = (song) => ({
+    id: song.videoId || song.id || '',
+    title: song.title || 'Unknown Title',
+    artists: song.artists || (song.artist ? [song.artist] : ['Unknown Artist']),
+    album: song.album || 'Unknown Album',
+    thumbnail: song.cover || song.thumbnail || 'https://placehold.co/100x100?text=No+Image',
+    duration: song.duration || '—',
+  });
 
   const fetchLikedSongs = async () => {
     setLoading(true);
     setError(null);
     try {
       const response = await axios.get(`http://localhost:5000/api/playlists/liked/${userId}`);
-      const normalizedSongs = (response.data.songs || []).map(song => ({
-        ...song,
-        videoId: song.videoId || song.id,
-      }));
-      setLikedSongs(normalizedSongs.reverse()); // newest first
+      // Normalize and reverse to show newest liked songs first
+      const normalizedSongs = (response.data.songs || [])
+        .map(normalizeSong)
+        .reverse();
+      setLikedSongs(normalizedSongs);
     } catch (err) {
       console.error('Failed to fetch liked songs:', err);
       setError('Failed to load liked songs');
@@ -28,27 +38,20 @@ function LikedSongsPage() {
   };
 
   const handleUnlike = async (song) => {
-    const videoId = song.videoId || song.id;
-    if (!videoId) {
-      console.error("Missing videoId for song:", song);
-      return;
-    }
-
+    const videoId = song.id;
     try {
       const response = await axios.put(`http://localhost:5000/api/playlists/liked/${userId}`, {
         song: {
           videoId,
           title: song.title,
-          artist: song.artist,
-          cover: song.cover,
+          artist: song.artists?.[0] || 'Unknown Artist',
+          cover: song.thumbnail,
         },
         action: 'remove',
       });
 
       if (response.status === 200) {
-        setLikedSongs(prev => prev.filter(s => (s.videoId || s.id) !== videoId));
-      } else {
-        console.error("Unexpected response:", response);
+        setLikedSongs(prev => prev.filter(s => s.id !== videoId));
       }
     } catch (err) {
       console.error('Failed to unlike the song:', err);
@@ -90,32 +93,41 @@ function LikedSongsPage() {
       <div className="grid gap-4">
         {likedSongs.map((song) => (
           <div
-            key={song.videoId}
+            key={song.id}
             className="flex items-center justify-between gap-4 p-4 bg-white dark:bg-[#504B38] shadow-md rounded-2xl hover:shadow-lg transition"
           >
             <div className="flex items-center gap-4">
               <img
-                src={song.cover || 'https://placehold.co/100x100?text=No+Image'}
+                src={song.thumbnail}
                 alt={`Cover art for ${song.title}`}
                 className="w-20 h-20 object-cover rounded-xl"
               />
               <div>
-                <p className="text-lg font-semibold text-[#504B38] dark:text-[#F8F3D9]">
+                <p className="text-lg font-semibold text-[#504B38] dark:text-[#F8F3D9] truncate max-w-xs">
                   {song.title}
                 </p>
-                <p className="text-sm text-[#7A745D] dark:text-[#B9B28A]">
-                  {song.artist}
+                <p className="text-sm text-[#7A745D] dark:text-[#B9B28A] truncate max-w-xs">
+                  {song.artists.join(', ')}
                 </p>
               </div>
             </div>
 
-            <button
-              onClick={() => handleUnlike(song)}
-              className="p-3 hover:scale-110 transition rounded-full bg-[#7A745D] dark:bg-[#B9B28A]"
-              title="Unlike this song"
-            >
-              <Heart className="w-5 h-5 text-white dark:text-[#3B362C]" fill="currentColor" />
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => onSongClick(song)}
+                className="p-3 hover:scale-110 transition rounded-full bg-[#7A745D] dark:bg-[#B9B28A]"
+                title="Play this song"
+              >
+                <Play className="w-5 h-5 text-white dark:text-[#3B362C]" />
+              </button>
+              <button
+                onClick={() => handleUnlike(song)}
+                className="p-3 hover:scale-110 transition rounded-full bg-[#7A745D] dark:bg-[#B9B28A]"
+                title="Unlike this song"
+              >
+                <Heart className="w-5 h-5 text-white dark:text-[#3B362C]" fill="currentColor" />
+              </button>
+            </div>
           </div>
         ))}
       </div>
