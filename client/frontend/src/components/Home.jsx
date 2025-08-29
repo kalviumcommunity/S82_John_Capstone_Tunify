@@ -14,6 +14,16 @@ function Home({ onSongClick }) {
     return url?.replace(/(default|hqdefault|mqdefault|sddefault)\.jpg/, 'maxresdefault.jpg');
   };
 
+  // Normalize song object to ensure Player receives consistent data
+  const normalizeSong = (song) => ({
+    id: song.videoId || song.id || '', // fallback for id
+    title: song.title || 'Unknown Title',
+    artists: song.artists || (song.artist ? [song.artist] : ['Unknown Artist']),
+    album: song.album || 'Unknown Album',
+    thumbnail: getHighResThumbnail(song.thumbnail) || song.cover || 'https://placehold.co/300x300?text=No+Image',
+    duration: song.duration || '—',
+  });
+
   const handleSearch = async () => {
     setLoading(true);
     setError(null);
@@ -76,26 +86,13 @@ function Home({ onSongClick }) {
       {error && <p className="text-red-500">{error}</p>}
 
       <section>
-        <div className="flex items-center gap-2 mb-4">
-          <Trending className="text-[#504B38] dark:text-[#F8F3D9]" />
-          <h2 className="text-2xl font-bold text-[#504B38] dark:text-[#F8F3D9]">Search Results</h2>
-        </div>
-
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left text-gray-800 dark:text-gray-300">
-            <thead>
-              <tr>
-                <th className="px-4 py-2">#</th>
-                <th className="px-4 py-2">Song</th>
-                <th className="px-4 py-2 hidden md:table-cell">Album</th>
-                <th className="px-4 py-2">Duration</th>
-              </tr>
-            </thead>
             <tbody>
               {results.map((song, idx) => (
                 <tr
-                  key={song.id}
-                  onClick={() => onSongClick(song)}
+                  key={song.videoId || song.id || idx}
+                  onClick={() => onSongClick(normalizeSong(song))}
                   className="border-b border-gray-300 dark:border-gray-700 hover:bg-[#EBE5C2] dark:hover:bg-[#6B644F] cursor-pointer transition-colors"
                 >
                   <td className="px-4 py-3 text-center">{idx + 1}</td>
